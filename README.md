@@ -14,3 +14,17 @@ Forcing the generator network to preserve the structure of objects in scenes by 
 - [ ] hyperparameter tuning
 - [ ] clean up dataset
 - [ ] collect and train with coarse-labelled images
+
+## Results up to date
+GTA5 images            |   After domain transfer
+:-------------------------:|:-------------------------:
+![](logs/1real_B.png)  |  ![](logs/1fake_A.png)
+![](logs/2real_B.png)  |  ![](logs/2fake_A.png)
+![](logs/3real_B.png)  |  ![](logs/3fake_A.png)
+
+CITYSCAPES images      |   After domain transfer
+:-------------------------:|:-------------------------:
+![](logs/1real_A.png)  |  ![](logs/1fake_B.png)
+![](logs/2real_A.png)  |  ![](logs/2fake_B.png)
+![](logs/3real_A.png)  |  ![](logs/3fake_B.png)
+
