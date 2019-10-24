@@ -4,6 +4,10 @@ from torch.utils.data import DataLoader
 from torch.autograd import Variable
 import torch
 import itertools
+import os
+from datetime import datetime
+from tensorboardX import SummaryWriter
+
 
 from model import Generator
 from model import Discriminator
@@ -16,16 +20,50 @@ from dataset import ImgDataset
 
 
 def main(args):
-    # writer = SummaryWriter(os.path.join(args.out_dir, 'logs'))
+    writer = SummaryWriter(os.path.join(args.out_dir, 'logs'))
+    current_time = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+    os.makedirs(os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time))
+
     G_AB = Generator(args.in_channel, args.out_channel).to(args.device)
     G_BA = Generator(args.in_channel, args.out_channel).to(args.device)
     D_A = Discriminator(args.in_channel).to(args.device)
     D_B = Discriminator(args.out_channel).to(args.device)
 
-    G_AB.apply(weights_init_normal)
-    G_BA.apply(weights_init_normal)
-    D_A.apply(weights_init_normal)
-    D_B.apply(weights_init_normal)
+    if args.model_path is not None:
+        AB_path = os.join.path(args.model_path,'ab.pt')
+        BA_path = os.join.path(args.model_path,'ba.pt')
+        DA_path = os.join.path(args.model_path,'da.pt')
+        DB_path = os.join.path(args.model_path,'db.pt')
+
+        with open(AB_path, 'rb') as f:
+            state_dict = torch.load(f)
+            G_AB.load_state_dict(state_dict)
+        G_AB = nn.DataParallel(G_AB)
+        G_AB.eval()
+
+        with open(BA_path, 'rb') as f:
+            state_dict = torch.load(f)
+            G_BA.load_state_dict(state_dict)
+        G_BA = nn.DataParallel(G_BA)
+        G_BA.eval()
+
+        with open(DA_path, 'rb') as f:
+            state_dict = torch.load(f)
+            D_A.load_state_dict(state_dict)
+        D_A = nn.DataParallel(D_A)
+        D_A.eval()
+
+        with open(DB_path, 'rb') as f:
+            state_dict = torch.load(f)
+            D_B.load_state_dict(state_dict)
+        D_B = nn.DataParallel(D_B)
+        D_B.eval()
+
+    else:
+        G_AB.apply(weights_init_normal)
+        G_BA.apply(weights_init_normal)
+        D_A.apply(weights_init_normal)
+        D_B.apply(weights_init_normal)
 
     criterion_GAN = torch.nn.MSELoss()
     criterion_cycle = torch.nn.L1Loss()
@@ -43,8 +81,7 @@ def main(args):
     fake_A_buffer = ReplayBuffer()
     fake_B_buffer = ReplayBuffer()
 
-    transforms_ = [
-                    transforms.ToTensor(),
+    transforms_ = [ transforms.ToTensor(),
                     transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) ]
     dataloader = DataLoader(ImgDataset(args.dataset_path, transforms_=transforms_, unaligned=True, device=args.device),
                             batch_size=args.batchSize, shuffle=True, num_workers=0)
@@ -52,6 +89,10 @@ def main(args):
     target_real = Variable(torch.Tensor(args.batchSize,1).fill_(1.)).to(args.device).detach()
     target_fake = Variable(torch.Tensor(args.batchSize,1).fill_(0.)).to(args.device).detach()
 
+    G_AB.train()
+    G_BA.train()
+    D_A.train()
+    D_B.train()
     for epoch in range(args.epoch, args.n_epochs):
         for i, batch in enumerate(dataloader):
             real_A = batch['A'].clone()
@@ -62,11 +103,11 @@ def main(args):
             #gan loss
             fake_b = G_AB(real_A)
             pred_fakeb = D_B(fake_b)
-            loss_gan_AB = criterion_GAN(pred_fakeb, target_real)
+            loss_gan_AB = criterion_GAN(pred_fakeb, target_real)*3
 
             fake_a = G_BA(real_B)
             pred_fakea = D_A(fake_a)
-            loss_gan_BA = criterion_GAN(pred_fakea, target_real)
+            loss_gan_BA = criterion_GAN(pred_fakea, target_real)*3
 
             #identity loss
             same_b = G_AB(real_B)
@@ -118,7 +159,14 @@ def main(args):
             logger.log({'loss_G': loss_G, 'loss_G_identity': (loss_identity_A + loss_identity_B), 'loss_G_GAN': (loss_gan_AB + loss_gan_BA),
                         'loss_G_cycle': (loss_cycle_ABA + loss_cycle_BAB), 'loss_D': (loss_D_A + loss_D_B)},
                        images={'real_A': real_A, 'real_B': real_B, 'fake_A': fake_a, 'fake_B': fake_b},
-                       out_dir=os.path.join(args.out_dir, 'logs', str(epoch)))
+                       out_dir=os.path.join(args.out_dir, 'logs', str(epoch)), writer=writer)
+
+        if (epoch+1)%args.save_per_epochs == 0:
+            torch.save(G_AB.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'ab.pt'))
+            torch.save(G_BA.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'ba.pt'))
+            torch.save(D_A.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'da.pt'))
+            torch.save(D_B.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'db.pt'))
+
         lr_scheduler_G.step()
         lr_scheduler_D_A.step()
         lr_scheduler_D_B.step()
@@ -137,9 +185,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--epoch', type=int, default=0, help='starting epoch')
     parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs of training')
+    parser.add_argument('--save_per_epochs', type=int, default=5, help='starting epoch')
     parser.add_argument('--batchSize', type=int, default=1, help='size of the batches')
     parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
-    parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start decaying lr')
+    parser.add_argument('--decay_epoch', type=int, default=5, help='epoch to start decaying lr')
     # parser.add_argument('--size', type=int, default=256, help='size of the data crop (squared assumed)')
     parser.add_argument('--in_channel', type=int, default=3, help='number of channels of input data')
     parser.add_argument('--out_channel', type=int, default=3, help='number of channels of output data')

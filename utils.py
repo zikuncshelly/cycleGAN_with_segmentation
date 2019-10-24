@@ -22,18 +22,22 @@ class Logger():
         self.loss_windows = {}
         self.image_windows = {}
 
-    def log(self, losses=None, images=None, out_dir=None):
+    def log(self, losses=None, images=None, out_dir=None, writer=None):
         self.mean_period += time.time() - self.prev_time
         self.prev_time = time.time()
         sys.stdout.write('\rEpoch %03d/%03d [%04d/%04d] -- ' % (self.epoch, self.n_epochs, self.batch, self.batches_epoch))
+
+        batches_done = self.batches_epoch * (self.epoch-1) + self.batch
+        batches_left = self.batches_epoch * (self.n_epochs - self.epoch) + self.batches_epoch - self.batch
+
         for i, loss_name in enumerate(losses.keys()):
             if loss_name not in self.losses:
                 self.losses[loss_name] = losses[loss_name].item()
             else:
                 self.losses[loss_name] += losses[loss_name].item()
+            if writer is not None:
+                writer.add_scalar(loss_name, losses[loss_name].item(),batches_done)
 
-        batches_done = self.batches_epoch * (self.epoch-1) + self.batch
-        batches_left = self.batches_epoch * (self.n_epochs - self.epoch) + self.batches_epoch - self.batch
         # sys.stdout.write('ETA: %s' % (datetime.timedelta(seconds=batches_left*self.mean_period/batches_done)))
         sys.stdout.write('ETA: %s' % (datetime.timedelta(seconds=(self.batches_epoch-self.batch)*self.mean_period/batches_done)))
 
@@ -90,7 +94,7 @@ class LambdaLR():
 def weights_init_normal(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
-        torch.nn.init.normal(m.weight.data, 0.0, 0.02)
+        torch.nn.init.normal_(m.weight.data, 0.0, 0.02)
     elif classname.find('BatchNorm2d') != -1:
         torch.nn.init.normal(m.weight.data, 1.0, 0.02)
         torch.nn.init.constant(m.bias.data, 0.0)
