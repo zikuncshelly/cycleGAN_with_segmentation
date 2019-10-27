@@ -7,6 +7,7 @@ import itertools
 import os
 from datetime import datetime
 from tensorboardX import SummaryWriter
+from torch import nn
 
 
 from model import Generator
@@ -16,6 +17,7 @@ from utils import LambdaLR
 from utils import Logger
 from utils import weights_init_normal
 from dataset import ImgDataset
+from Unet import Unet
 
 
 
@@ -23,41 +25,41 @@ def main(args):
     writer = SummaryWriter(os.path.join(args.out_dir, 'logs'))
     current_time = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
     os.makedirs(os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time))
+    os.makedirs(os.path.join(args.out_dir, 'logs', args.model_name+'_'+current_time))
 
     G_AB = Generator(args.in_channel, args.out_channel).to(args.device)
     G_BA = Generator(args.in_channel, args.out_channel).to(args.device)
     D_A = Discriminator(args.in_channel).to(args.device)
     D_B = Discriminator(args.out_channel).to(args.device)
+    segmen_A = Unet(3, 20).to(args.device)
+
 
     if args.model_path is not None:
         AB_path = os.join.path(args.model_path,'ab.pt')
         BA_path = os.join.path(args.model_path,'ba.pt')
         DA_path = os.join.path(args.model_path,'da.pt')
         DB_path = os.join.path(args.model_path,'db.pt')
+        segmen_path = os.join.path(args.model_path,'semsg.pt')
 
         with open(AB_path, 'rb') as f:
             state_dict = torch.load(f)
             G_AB.load_state_dict(state_dict)
-        G_AB = nn.DataParallel(G_AB)
-        G_AB.eval()
 
         with open(BA_path, 'rb') as f:
             state_dict = torch.load(f)
             G_BA.load_state_dict(state_dict)
-        G_BA = nn.DataParallel(G_BA)
-        G_BA.eval()
 
         with open(DA_path, 'rb') as f:
             state_dict = torch.load(f)
             D_A.load_state_dict(state_dict)
-        D_A = nn.DataParallel(D_A)
-        D_A.eval()
 
         with open(DB_path, 'rb') as f:
             state_dict = torch.load(f)
             D_B.load_state_dict(state_dict)
-        D_B = nn.DataParallel(D_B)
-        D_B.eval()
+
+        with open(segmen_path, 'rb') as f:
+            state_dict = torch.load(f)
+            segmen_A.load_state_dict(state_dict)
 
     else:
         G_AB.apply(weights_init_normal)
@@ -65,14 +67,26 @@ def main(args):
         D_A.apply(weights_init_normal)
         D_B.apply(weights_init_normal)
 
+    G_AB = nn.DataParallel(G_AB)
+    G_BA = nn.DataParallel(G_BA)
+    D_A = nn.DataParallel(D_A)
+    D_B = nn.DataParallel(D_B)
+    segmen_A = nn.DataParallel(segmen_A)
+
+
+
     criterion_GAN = torch.nn.MSELoss()
     criterion_cycle = torch.nn.L1Loss()
     criterion_identity = torch.nn.L1Loss()
+    criterion_segmen = torch.nn.BCELoss()
 
     optimizer_G = torch.optim.Adam(itertools.chain(G_AB.parameters(), G_BA.parameters()),
                                    lr=args.lr, betas=(0.5, 0.999))
     optimizer_D_A = torch.optim.Adam(D_A.parameters(), lr=args.lr, betas=(0.5, 0.999))
     optimizer_D_B = torch.optim.Adam(D_B.parameters(), lr=args.lr, betas=(0.5, 0.999))
+
+    optimizer_segmen_A = torch.optim.Adam(segmen_A.parameters(), lr=args.lr, betas=(0.5, 0.999))
+
 
     lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LambdaLR(args.n_epochs, args.epoch, args.decay_epoch).step)
     lr_scheduler_D_A = torch.optim.lr_scheduler.LambdaLR(optimizer_D_A, lr_lambda=LambdaLR(args.n_epochs, args.epoch, args.decay_epoch).step)
@@ -93,21 +107,30 @@ def main(args):
     G_BA.train()
     D_A.train()
     D_B.train()
+    segmen_A.train()
+
     for epoch in range(args.epoch, args.n_epochs):
         for i, batch in enumerate(dataloader):
             real_A = batch['A'].clone()
             real_B = batch['B'].clone()
+            A_label = batch['A_label'].clone()
+
+            optimizer_segmen_A.zero_grad()
+            #segmen loss
+            pred_Alabel = segmen_A(real_A)
+            loss_segmen_A = criterion_segmen(pred_Alabel, A_label)
+            loss_segmen_A.backward()
+            optimizer_segmen_A.step()
 
             optimizer_G.zero_grad()
-
             #gan loss
             fake_b = G_AB(real_A)
             pred_fakeb = D_B(fake_b)
-            loss_gan_AB = criterion_GAN(pred_fakeb, target_real)*3
+            loss_gan_AB = criterion_GAN(pred_fakeb, target_real)
 
             fake_a = G_BA(real_B)
             pred_fakea = D_A(fake_a)
-            loss_gan_BA = criterion_GAN(pred_fakea, target_real)*3
+            loss_gan_BA = criterion_GAN(pred_fakea, target_real)
 
             #identity loss
             same_b = G_AB(real_B)
@@ -121,7 +144,11 @@ def main(args):
             loss_cycle_ABA = criterion_cycle(recovered_A, real_A)*10
             loss_cycle_BAB = criterion_cycle(recovered_B, real_B)*10
 
-            loss_G = loss_gan_AB + loss_gan_BA + loss_identity_B + loss_identity_A + loss_cycle_ABA + loss_cycle_BAB
+            #segmen diff loss
+            pred_fakeAlabel = segmen_A(fake_a)
+            loss_segmen_diff = criterion_segmen(pred_fakeAlabel, pred_Alabel.detach())
+
+            loss_G = loss_gan_AB + loss_gan_BA + loss_identity_B + loss_identity_A + loss_cycle_ABA + loss_cycle_BAB + loss_segmen_diff
             loss_G.backward()
 
             optimizer_G.step()
@@ -156,16 +183,17 @@ def main(args):
 
             optimizer_D_B.step()
 
-            logger.log({'loss_G': loss_G, 'loss_G_identity': (loss_identity_A + loss_identity_B), 'loss_G_GAN': (loss_gan_AB + loss_gan_BA),
+            logger.log({'loss_segmen_A': loss_segmen_A, 'loss_G': loss_G, 'loss_G_identity': (loss_identity_A + loss_identity_B), 'loss_G_GAN': (loss_gan_AB + loss_gan_BA),
                         'loss_G_cycle': (loss_cycle_ABA + loss_cycle_BAB), 'loss_D': (loss_D_A + loss_D_B)},
                        images={'real_A': real_A, 'real_B': real_B, 'fake_A': fake_a, 'fake_B': fake_b},
-                       out_dir=os.path.join(args.out_dir, 'logs', str(epoch)), writer=writer)
+                       out_dir=os.path.join(args.out_dir, 'logs', args.model_name+'_'+current_time+'/'+str(epoch)), writer=writer)
 
         if (epoch+1)%args.save_per_epochs == 0:
             torch.save(G_AB.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'ab.pt'))
             torch.save(G_BA.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'ba.pt'))
             torch.save(D_A.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'da.pt'))
             torch.save(D_B.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'db.pt'))
+            torch.save(segmen_A.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'semsg.pt'))
 
         lr_scheduler_G.step()
         lr_scheduler_D_A.step()

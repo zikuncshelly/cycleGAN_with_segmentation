@@ -41,7 +41,6 @@ class Logger():
         # sys.stdout.write('ETA: %s' % (datetime.timedelta(seconds=batches_left*self.mean_period/batches_done)))
         sys.stdout.write('ETA: %s' % (datetime.timedelta(seconds=(self.batches_epoch-self.batch)*self.mean_period/batches_done)))
 
-
         if (self.batch % self.batches_epoch) == 0:
             #plot losses
             sys.stdout.write('\n')
