@@ -7,7 +7,7 @@ Forcing the generator network to preserve the structure of objects in scenes by 
 
 ### TODO list
 - [x] Add save/load model
-- [ ] Add segmentation network
+- [x] Add segmentation network
 - [ ] multithread processing
 - [x] add loss plot with tensorboardX
 - [ ] train in higher resolution
