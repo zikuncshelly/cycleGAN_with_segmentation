@@ -10,27 +10,46 @@ import torch
 
 class ImgDataset(Dataset):
     def __init__(self, imgpath, transforms_=None, unaligned=True, mode='train', device='cuda'):
-        self.imgs_A = sorted(glob.glob(os.path.join(imgpath, '%sA' % mode, '*.jpg')))
-        self.imgs_B = sorted(glob.glob(os.path.join(imgpath, '%sB' % mode, '*.jpg')))
-        self.imgs_A_labels = sorted(glob.glob(os.path.join(imgpath, '%sA_labels' % mode, '*.jpg')))
-        self.imgs_B_labels = sorted(glob.glob(os.path.join(imgpath, '%sB_labels' % mode, '*.jpg')))
+        self.mode = mode
+        if mode == 'train':
+            self.imgs_A = sorted(glob.glob(os.path.join(imgpath, '%sA' % mode, '*.jpg')))
+            self.imgs_B = sorted(glob.glob(os.path.join(imgpath, '%sB' % mode, '*.jpg')))
+            self.imgs_A_labels = sorted(glob.glob(os.path.join(imgpath, '%sA_labels' % mode, '*.jpg')))
+            self.imgs_B_labels = sorted(glob.glob(os.path.join(imgpath, '%sB_labels' % mode, '*.png')))
+        elif mode == 'test':
+            self.testImgs = sorted(glob.glob(os.path.join(imgpath, '*.jpg')))
+        else:
+            raise Exception('mode must be train or test!')
         self.transform = transforms.Compose(transforms_)
         self.unaligned = unaligned
         self.device = device
 
     def __getitem__(self, index):
-        item_A = self.transform(Image.open(self.imgs_A[index % len(self.imgs_A)]))
-        A_label = Image.open(self.imgs_A_labels[index % len(self.imgs_A)])
-        A_label = np.asarray(A_label)[:,:,0]
-        A_label = convert_label(A_label)
-        if self.unaligned:
-            item_B = self.transform(Image.open(self.imgs_B[random.randint(0, len(self.imgs_B) - 1)]))
+        if self.mode == 'train':
+            item_A = self.transform(Image.open(self.imgs_A[index % len(self.imgs_A)]))
+            A_label = Image.open(self.imgs_A_labels[index % len(self.imgs_A)])
+            A_label = np.asarray(A_label)[:,:,0]
+            A_label = convert_label(A_label)
+            if self.unaligned:
+                bidx = random.randint(0, len(self.imgs_B) - 1)
+                item_B = self.transform(Image.open(self.imgs_B[bidx]))
+                B_label = Image.open(self.imgs_B_labels[bidx])
+                B_label = np.asarray(B_label)[:,:,0]
+                B_label = convert_label(B_label)
+
+            else:
+                item_B = self.transform(Image.open(self.imgs_B[index % len(self.imgs_B)]))
+            return {'A': item_A.to(self.device), 'B': item_B.to(self.device), 'A_label': A_label.to(self.device), 'B_label' : B_label.to(self.device)}
         else:
-            item_B = self.transform(Image.open(self.imgs_B[index % len(self.imgs_B)]))
-        return {'A': item_A.to(self.device), 'B': item_B.to(self.device), 'A_label': A_label.to(self.device)}
+            img = self.transform(Image.open(self.testImgs[index]))
+            return self.testImgs[index], img
 
     def __len__(self):
-        return max(len(self.imgs_A), len(self.imgs_B))
+        if self.mode == 'train':
+            return max(len(self.imgs_A), len(self.imgs_B))
+        else:
+            return len(self.testImgs)
+
 
 def convert_label(arr):
     arr = arr.copy()

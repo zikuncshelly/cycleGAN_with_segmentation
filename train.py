@@ -114,11 +114,13 @@ def main(args):
             real_A = batch['A'].clone()
             real_B = batch['B'].clone()
             A_label = batch['A_label'].clone()
+            B_label = batch['B_label'].clone()
 
             optimizer_segmen_A.zero_grad()
             #segmen loss
             pred_Alabel = segmen_A(real_A)
-            loss_segmen_A = criterion_segmen(pred_Alabel, A_label)
+            pred_Blabel = segmen_A(real_B)
+            loss_segmen_A = criterion_segmen(pred_Alabel, A_label) + criterion_segmen(pred_Blabel, B_label)
             loss_segmen_A.backward()
             optimizer_segmen_A.step()
 
@@ -146,7 +148,8 @@ def main(args):
 
             #segmen diff loss
             pred_fakeAlabel = segmen_A(fake_a)
-            loss_segmen_diff = criterion_segmen(pred_fakeAlabel, pred_Alabel.detach())
+            pred_fakeBlabel = segmen_A(fake_b)
+            loss_segmen_diff = criterion_segmen(pred_fakeAlabel, pred_Alabel.detach()) + criterion_segmen(pred_fakeBlabel, pred_Blabel.detach())
 
             loss_G = loss_gan_AB + loss_gan_BA + loss_identity_B + loss_identity_A + loss_cycle_ABA + loss_cycle_BAB + loss_segmen_diff
             loss_G.backward()
