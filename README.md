@@ -6,6 +6,7 @@ After doing domain transfer, upper parts of buildings in CITYSCAPES images are e
 Forcing the generator network to preserve the structure of objects in scenes by explicitly training segmentation network on paired data might help prevent such cases...  
 
 ### TODO list
+- [ ] clean up code & update usage
 - [x] Add save/load model
 - [x] Add segmentation network
 - [ ] multithread processing
