@@ -14,33 +14,41 @@ from Unet import Unet
 def main(args):
 
     G = Generator(args.in_channel, args.out_channel).to(args.device)
-    segmen_A = Unet(3, 20).to(args.device)
+    G_reverse = Generator(args.in_channel, args.out_channel).to(args.device)
+    # segmen_A = Unet(3, 20).to(args.device)
 
     if args.model_path is not None:
         AB_path = os.path.join(args.model_path,'ab.pt')
         BA_path = os.path.join(args.model_path,'ba.pt')
-        segmen_path = os.path.join(args.model_path,'semsg.pt')
+        # segmen_path = os.path.join(args.model_path,'semsg.pt')
 
         if args.direction == 'AB':
             with open(AB_path, 'rb') as f:
                 state_dict = torch.load(f)
                 G.load_state_dict(state_dict)
+            with open(BA_path, 'rb') as f:
+                state_dict = torch.load(f)
+                G_reverse.load_state_dict(state_dict)
+
         elif args.direction == 'BA':
             with open(BA_path, 'rb') as f:
                 state_dict = torch.load(f)
                 G.load_state_dict(state_dict)
+            with open(AB_path, 'rb') as f:
+                state_dict = torch.load(f)
+                G_reverse.load_state_dict(state_dict)
         else:
             raise Exception('direction has to be BA OR AB!')
 
-        with open(segmen_path, 'rb') as f:
-            state_dict = torch.load(f)
-            segmen_A.load_state_dict(state_dict)
+        # with open(segmen_path, 'rb') as f:
+        #     state_dict = torch.load(f)
+        #     segmen_A.load_state_dict(state_dict)
 
     else:
         raise Exception('please specify model path!')
 
     G = nn.DataParallel(G)
-    segmen_A = nn.DataParallel(segmen_A)
+    # segmen_A = nn.DataParallel(segmen_A)
 
     transforms_ = [ transforms.ToTensor(),
                     transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) ]
@@ -48,19 +56,17 @@ def main(args):
                             batch_size=args.batchSize, shuffle=False, num_workers=0)
 
     G.eval()
-    segmen_A.eval()
+    # segmen_A.eval()
     with torch.no_grad():
         for i, batch in enumerate(testloader):
             name, toTest = batch
             #segmentation
-            pred_label = segmen_A(toTest)
+            # pred_label = segmen_A(toTest)
             transformed_ = G(toTest)
+            # recovered = G_reverse(transformed_)
             for idx in range(len(name)):
+                # utils.save_image(torch.cat((toTest[idx].to(args.device), recovered[idx], transformed_[idx]),axis=1), os.path.join(args.out_dir, args.direction+'_'+name[idx].split('/')[-1]), normalize=True, range=(-1, 1))
                 utils.save_image(transformed_[idx], os.path.join(args.out_dir, name[idx].split('/')[-1]), normalize=True, range=(-1, 1))
-
-                utils.save_image(torch.cat((toTest[idx].to(args.device), transformed_[idx]),axis=1), os.path.join(args.out_dir, args.direction+'_'+name[idx].split('/')[-1]), normalize=True, range=(-1, 1))
-
-
 
 
 

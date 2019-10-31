@@ -1,11 +1,4 @@
 from collections import namedtuple
-import scipy.io
-mat = scipy.io.loadmat('mapping.mat')
-# print(mat)
-from PIL import Image
-import numpy as np
-img = Image.open('015_00010.png')
-print(np.unique(np.asarray(img)))
 #--------------------------------------------------------------------------------
 # Definitions
 #--------------------------------------------------------------------------------

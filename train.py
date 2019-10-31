@@ -31,7 +31,7 @@ def main(args):
     G_BA = Generator(args.in_channel, args.out_channel).to(args.device)
     D_A = Discriminator(args.in_channel).to(args.device)
     D_B = Discriminator(args.out_channel).to(args.device)
-    segmen_A = Unet(3, 20).to(args.device)
+    segmen_B = Unet(3, 34).to(args.device)
 
 
     if args.model_path is not None:
@@ -59,7 +59,7 @@ def main(args):
 
         with open(segmen_path, 'rb') as f:
             state_dict = torch.load(f)
-            segmen_A.load_state_dict(state_dict)
+            segmen_B.load_state_dict(state_dict)
 
     else:
         G_AB.apply(weights_init_normal)
@@ -71,7 +71,7 @@ def main(args):
     G_BA = nn.DataParallel(G_BA)
     D_A = nn.DataParallel(D_A)
     D_B = nn.DataParallel(D_B)
-    segmen_A = nn.DataParallel(segmen_A)
+    segmen_B = nn.DataParallel(segmen_B)
 
 
 
@@ -85,7 +85,7 @@ def main(args):
     optimizer_D_A = torch.optim.Adam(D_A.parameters(), lr=args.lr, betas=(0.5, 0.999))
     optimizer_D_B = torch.optim.Adam(D_B.parameters(), lr=args.lr, betas=(0.5, 0.999))
 
-    optimizer_segmen_A = torch.optim.Adam(segmen_A.parameters(), lr=args.lr, betas=(0.5, 0.999))
+    optimizer_segmen_B = torch.optim.Adam(segmen_B.parameters(), lr=args.lr, betas=(0.5, 0.999))
 
 
     lr_scheduler_G = torch.optim.lr_scheduler.LambdaLR(optimizer_G, lr_lambda=LambdaLR(args.n_epochs, args.epoch, args.decay_epoch).step)
@@ -107,49 +107,48 @@ def main(args):
     G_BA.train()
     D_A.train()
     D_B.train()
-    segmen_A.train()
+    segmen_B.train()
 
     for epoch in range(args.epoch, args.n_epochs):
         for i, batch in enumerate(dataloader):
             real_A = batch['A'].clone()
             real_B = batch['B'].clone()
-            A_label = batch['A_label'].clone()
             B_label = batch['B_label'].clone()
 
-            optimizer_segmen_A.zero_grad()
-            #segmen loss
-            pred_Alabel = segmen_A(real_A)
-            pred_Blabel = segmen_A(real_B)
-            loss_segmen_A = criterion_segmen(pred_Alabel, A_label) + criterion_segmen(pred_Blabel, B_label)
-            loss_segmen_A.backward()
-            optimizer_segmen_A.step()
+            fake_b = G_AB(real_A)
+            fake_a = G_BA(real_B)
+            same_b = G_AB(real_B)
+            same_a = G_BA(real_A)
+            recovered_A = G_BA(fake_b)
+            recovered_B = G_AB(fake_a)
+            pred_Blabel = segmen_B(real_B)
+            pred_fakeAlabel = segmen_B(fake_a)
+
+
+            optimizer_segmen_B.zero_grad()
+            #segmen loss, do we assume that it also learns how to segment images after doing domain transfer?
+            loss_segmen_B = criterion_segmen(pred_Blabel, B_label) + criterion_segmen(segmen_B(fake_a.detach()), B_label)
+            loss_segmen_B.backward()
+            optimizer_segmen_B.step()
 
             optimizer_G.zero_grad()
             #gan loss
-            fake_b = G_AB(real_A)
             pred_fakeb = D_B(fake_b)
             loss_gan_AB = criterion_GAN(pred_fakeb, target_real)
 
-            fake_a = G_BA(real_B)
             pred_fakea = D_A(fake_a)
             loss_gan_BA = criterion_GAN(pred_fakea, target_real)
 
             #identity loss
-            same_b = G_AB(real_B)
             loss_identity_B = criterion_identity(same_b, real_B)*5
-            same_a = G_BA(real_A)
             loss_identity_A = criterion_identity(same_a, real_A)*5
 
             #cycle consistency loss
-            recovered_A = G_BA(fake_b)
-            recovered_B = G_AB(fake_a)
             loss_cycle_ABA = criterion_cycle(recovered_A, real_A)*10
             loss_cycle_BAB = criterion_cycle(recovered_B, real_B)*10
 
-            #segmen diff loss
-            pred_fakeAlabel = segmen_A(fake_a)
-            pred_fakeBlabel = segmen_A(fake_b)
-            loss_segmen_diff = criterion_segmen(pred_fakeAlabel, pred_Alabel.detach()) + criterion_segmen(pred_fakeBlabel, pred_Blabel.detach())
+            #cycle segmen diff loss
+            loss_segmen_diff = criterion_segmen(segmen_B(recovered_B), pred_Blabel.detach())
 
             loss_G = loss_gan_AB + loss_gan_BA + loss_identity_B + loss_identity_A + loss_cycle_ABA + loss_cycle_BAB + loss_segmen_diff
             loss_G.backward()
@@ -186,9 +185,9 @@ def main(args):
 
             optimizer_D_B.step()
 
-            logger.log({'loss_segmen_A': loss_segmen_A, 'loss_G': loss_G, 'loss_G_identity': (loss_identity_A + loss_identity_B), 'loss_G_GAN': (loss_gan_AB + loss_gan_BA),
+            logger.log({'loss_segmen_B': loss_segmen_B, 'loss_G': loss_G, 'loss_G_identity': (loss_identity_A + loss_identity_B), 'loss_G_GAN': (loss_gan_AB + loss_gan_BA),
                         'loss_G_cycle': (loss_cycle_ABA + loss_cycle_BAB), 'loss_D': (loss_D_A + loss_D_B)},
-                       images={'real_A': real_A, 'real_B': real_B, 'fake_A': fake_a, 'fake_B': fake_b},
+                       images={'real_A': real_A, 'real_B': real_B, 'fake_A': fake_a, 'fake_B': fake_b, 'reconstructed_A': recovered_A, 'reconstructed_B': recovered_B},
                        out_dir=os.path.join(args.out_dir, 'logs', args.model_name+'_'+current_time+'/'+str(epoch)), writer=writer)
 
         if (epoch+1)%args.save_per_epochs == 0:
@@ -196,7 +195,7 @@ def main(args):
             torch.save(G_BA.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'ba.pt'))
             torch.save(D_A.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'da.pt'))
             torch.save(D_B.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'db.pt'))
-            torch.save(segmen_A.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'semsg.pt'))
+            torch.save(segmen_B.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'semsg.pt'))
 
         lr_scheduler_G.step()
         lr_scheduler_D_A.step()
