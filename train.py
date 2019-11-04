@@ -191,11 +191,12 @@ def main(args):
                        out_dir=os.path.join(args.out_dir, 'logs', args.model_name+'_'+current_time+'/'+str(epoch)), writer=writer)
 
         if (epoch+1)%args.save_per_epochs == 0:
-            torch.save(G_AB.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'ab.pt'))
-            torch.save(G_BA.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'ba.pt'))
-            torch.save(D_A.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'da.pt'))
-            torch.save(D_B.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'db.pt'))
-            torch.save(segmen_B.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'semsg.pt'))
+            os.makedirs(os.path.join(args.out_dir,'models',args.model_name+'_'+current_time,str(epoch)))
+            torch.save(G_AB.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time,str(epoch), 'ab.pt'))
+            torch.save(G_BA.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time,str(epoch), 'ba.pt'))
+            torch.save(D_A.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time,str(epoch), 'da.pt'))
+            torch.save(D_B.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time,str(epoch), 'db.pt'))
+            torch.save(segmen_B.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time,str(epoch), 'semsg.pt'))
 
         lr_scheduler_G.step()
         lr_scheduler_D_A.step()
@@ -215,14 +216,14 @@ if __name__ == '__main__':
 
     parser.add_argument('--epoch', type=int, default=0, help='starting epoch')
     parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs of training')
-    parser.add_argument('--save_per_epochs', type=int, default=5, help='starting epoch')
+    parser.add_argument('--save_per_epochs', type=int, default=1, help='starting epoch')
     parser.add_argument('--batchSize', type=int, default=1, help='size of the batches')
-    parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
+    parser.add_argument('--lr', type=float, default=0.0004, help='initial learning rate')
     parser.add_argument('--decay_epoch', type=int, default=5, help='epoch to start decaying lr')
     # parser.add_argument('--size', type=int, default=256, help='size of the data crop (squared assumed)')
     parser.add_argument('--in_channel', type=int, default=3, help='number of channels of input data')
     parser.add_argument('--out_channel', type=int, default=3, help='number of channels of output data')
-    parser.add_argument('--n_cpu', type=int, default=1, help='number of cpu threads to use during batch generation')
+    parser.add_argument('--n_cpu', type=int, default=2, help='number of cpu threads to use during batch generation')
     args = parser.parse_args()
     print(args)
 

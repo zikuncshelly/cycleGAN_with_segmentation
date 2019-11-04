@@ -191,28 +191,19 @@ def weights_init_normal(m):
         torch.nn.init.normal(m.weight.data, 1.0, 0.02)
         torch.nn.init.constant(m.bias.data, 0.0)
 
-def intersectionAndUnion(imPred, imLab, numClass):
-    # Remove classes from unlabeled pixels in gt image.
-    # We should not penalize detections in unlabeled portions of the image.
-    temp = imPred.copy()
-    imPred[temp==19] = -1
-    temp = imLab.copy()
-    imLab[temp==19] = -1
-    #Ignore label 19 in evaluation 
-    imPred += 1
-    imLab += 1
+def IOU(imPred, imLab, numClass):
+    iou = 0.
+    count = 0
+    for i in range(numClass):
+        predIndices = imPred==i
+        gtIndices = imLab==i
+        interesection = np.logical_and(predIndices,gtIndices)
+        union = np.logical_or(predIndices,gtIndices)
+        if len(imPred[union]) > 0 :
+            iou += (len(imPred[interesection])+1e-6)/(len(imPred[union])+1e-6)
+            count +=1
 
-    # Compute area intersection:
-    intersection = imPred * (imPred == imLab)
-    (area_intersection, _) = np.histogram(
-        intersection, bins=numClass, range=(1, numClass))
-
-    # Compute area union:
-    (area_pred, _) = np.histogram(imPred, bins=numClass, range=(1, numClass))
-    (area_lab, _) = np.histogram(imLab, bins=numClass, range=(1, numClass))
-    area_union = area_pred + area_lab - area_intersection
-
-    return (area_intersection, area_union, area_lab)
+    return iou/count
 
 def map_back_label(value):
     ignore_label = 255

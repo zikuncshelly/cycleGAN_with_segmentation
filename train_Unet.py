@@ -53,7 +53,8 @@ def main(args):
                        out_dir=os.path.join(args.out_dir, 'logs', args.model_name+'_'+current_time+'/'+str(epoch)))
 
         if (epoch+1)%args.save_per_epochs == 0:
-            torch.save(segmen_B.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time, 'semsg.pt'))
+            os.makedirs(os.path.join(args.out_dir,'models',args.model_name+'_'+current_time,str(epoch)))
+            torch.save(segmen_B.module.state_dict(),os.path.join(args.out_dir, 'models',args.model_name+'_'+current_time,str(epoch),'semsg.pt'))
 
 
 if __name__ == '__main__':
@@ -65,7 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', type=str, help='path to the model checkpoint', default=None)
     parser.add_argument('--out_dir', type=str, help='output dir', default='./')
     parser.add_argument('--device', type=str, help='set the device', default='cuda')
-    parser.add_argument('--model_name', type=str, help='name of model', default='cygan')
+    parser.add_argument('--model_name', type=str, help='name of model', default='Unet')
 
     parser.add_argument('--epoch', type=int, default=0, help='starting epoch')
     parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs of training')

@@ -15,12 +15,10 @@ def main(args):
 
     G = Generator(args.in_channel, args.out_channel).to(args.device)
     G_reverse = Generator(args.in_channel, args.out_channel).to(args.device)
-    # segmen_A = Unet(3, 20).to(args.device)
 
     if args.model_path is not None:
         AB_path = os.path.join(args.model_path,'ab.pt')
         BA_path = os.path.join(args.model_path,'ba.pt')
-        # segmen_path = os.path.join(args.model_path,'semsg.pt')
 
         if args.direction == 'AB':
             with open(AB_path, 'rb') as f:
@@ -40,15 +38,11 @@ def main(args):
         else:
             raise Exception('direction has to be BA OR AB!')
 
-        # with open(segmen_path, 'rb') as f:
-        #     state_dict = torch.load(f)
-        #     segmen_A.load_state_dict(state_dict)
 
     else:
         raise Exception('please specify model path!')
 
     G = nn.DataParallel(G)
-    # segmen_A = nn.DataParallel(segmen_A)
 
     transforms_ = [ transforms.ToTensor(),
                     transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) ]
@@ -56,12 +50,9 @@ def main(args):
                             batch_size=args.batchSize, shuffle=False, num_workers=0)
 
     G.eval()
-    # segmen_A.eval()
     with torch.no_grad():
         for i, batch in enumerate(testloader):
             name, toTest = batch
-            #segmentation
-            # pred_label = segmen_A(toTest)
             transformed_ = G(toTest)
             # recovered = G_reverse(transformed_)
             for idx in range(len(name)):
