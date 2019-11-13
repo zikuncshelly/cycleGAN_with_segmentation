@@ -36,11 +36,14 @@ Then run
 
 
 ### TODO list
+- [ ] Save list of images used for training
+- [ ] Figure out why cross entropy doesn't work
+- [ ] Go through the gta dataset to see if many scenes are on the pavement
 - [ ] Add VGG
-- [ ] Add validation
-- [ ] combine training of unet & normal
+- [x] Add validation
+- [x] combine training of unet & normal
 - [ ] plot the performance wrt amount of synthetic data used to train the network vs some synthetic + real to synthetic
-- [ ] plot the performance ratio real/syn (starting with 100% syn)
+- [x] plot the performance ratio real/syn (starting with 100% syn)
 - [ ] clean up code & update usage
 - [x] Add save/load model
 - [x] Add segmentation network
