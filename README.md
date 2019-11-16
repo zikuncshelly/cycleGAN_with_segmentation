@@ -36,7 +36,7 @@ Then run
 
 
 ### TODO list
-- [ ] Save list of images used for training
+- [ ] Save list of images used to continue training(saving tensors?list of names?)
 - [ ] Figure out why cross entropy doesn't work
 - [ ] Go through the gta dataset to see if many scenes are on the pavement
 - [ ] Add VGG
