@@ -40,12 +40,12 @@ This project aims to address the domain adaptation problem for semantic segmenta
     \centering
     \includegraphics[width=0.25\textwidth]{figures/068_02196.jpg}
     \includegraphics[width=0.25\textwidth]{figures/068_02196.png}
-    \caption{Sample pair of images from the GTA5 data set.}
+    \caption{Sample pair of images from the GTA5 data set. As can be noticed, the car is driving on a sidewalk, and scenes like this are very common in the GTA5 dataset. Worried that this might lead to a significant domain gap unresolvable by aligning styles, I went through the dataset and excluded them from our training set.}
     \label{fig:GTA5}
 \end{figure}
 
 \section{Models}
-\subsection{Basic CycleGAN}
+\subsection{Basic CycleGAN\cite{zhu2017unpaired}}
 \begin{figure}[H]
     \centering
 \includegraphics[width=0.7\textwidth]{figures/cygan.pdf}
@@ -64,16 +64,16 @@ I added a classifier to preserve contents(cars, buildings) during domain transfe
 \end{figure}
 
 \section{Notations}
-$X_S: $ Input from the source domain (GTA5)\\
-$X_{SasT}: $ Input stylized as the target style (GTA5)\\
-$Y_S: $ Label from the source domain \\
-$X_T: $ Input from the target domain (CITYSCAPES)\\
-$Y_T: $ Input from the target domain\\
-$F_T: $ Classifier for the target domain\\
-$G_{S\rightarrow T}: $ Mapping from the source domain to the target\\
-$G_{T\rightarrow S}: $ Mapping from the target domain to the source\\
-$D_S:$ Discriminator for the source domain\\
-$D_T:$ Discriminator for the target domain\\
+$X_S: $ Input from the source domain (GTA5).\\
+$X_{SasT}: $ Input stylized as the target style (GTA5). This notation is introduced when the parameters of the $G_{S\rightarrow T}:$ generators are not involved in back propogation. \\
+$Y_S: $ Label from the source domain. \\
+$X_T: $ Input from the target domain (CITYSCAPES).\\
+$Y_T: $ Input from the target domain.\\
+$F_T: $ Classifier for the target domain.\\
+$G_{S\rightarrow T}: $ Mapping from the source domain to the target.\\
+$G_{T\rightarrow S}: $ Mapping from the target domain to the source.\\
+$D_S:$ Discriminator for the source domain.\\
+$D_T:$ Discriminator for the target domain.\\
 $CE(X, Y, F_T): = -\mathcal{L}_{(x,y) \in (X,Y)}{[\sum_{k=1}^{K} \mathbbm{1}_{[y=k]} \log{[\sigma (F_T^{k}(x))]} ]}$ cross entropy loss, X and Y are the input and the label, $\sigma$ is the softmax function.
 \section{Loss Functions}
 The model learns mappings from the source domain to the target and the target to the source simultaneously. It is trained to produce samples that fools the discriminators in both domains.\\
@@ -85,13 +85,17 @@ $\mathcal{L}_{G_{sem}}(G_{S\rightarrow T}, X_S, F_T, Y_S) = \E_{ (x_s, y_s)\in (
 $\mathcal{L}_{G_{sem}}(G_{S\rightarrow T}, G_{T\rightarrow S}, X_T, F_T, Y_T) = \E_{ (x_t, y_t)\in (X_T, Y_T)} {[CE(F_T(G_{S\rightarrow T}(G_{T\rightarrow S}(x_t))),y_t)}]$\\\\
 The classifier is trained on paired target data as well as paired source data stylized as target.\\
 $\mathcal{L}_{sem}( X_{SasT}, X_T, Y_S, Y_T, F_T) = \E_{ (x_{sast}, y_s)\in (X_{SasT}, Y_S), (x_t, y_t)\in (X_T, Y_T)}{[CE(F_T(x_{sast}),y_s)+CE(F_T(x_t), y_t)]}$\\\\
-The overall loss is:\\
+The overall cycleGAN training loss is:\\
 \begin{align*}
-\mathcal{L}_{total}(X_S, Y_S, X_T, Y_T, F_T, G_{S\rightarrow T}, G_{T\rightarrow S}, D_S, D_T) =  \mathcal{L}_{GAN}(G_{S\rightarrow T}, X_S, D_S, D_T)  + \mathcal{L}_{GAN}(G_{T\rightarrow S}, X_T, D_S, D_T) \\ + \mathcal{L}_{Cyc}(G_{S\rightarrow T},G_{T\rightarrow S}, X_S, X_T) + \mathcal{L}_{G_{sem}}(G_{S\rightarrow T}, X_S, F_T, Y_S) \\ +  \mathcal{L}_{G_{sem}}(G_{S\rightarrow T}, G_{T\rightarrow S}, X_T, F_T, Y_T) +\mathcal{L}_{sem}( X_{SasT}, X_T, Y_S, Y_T, F_T) 
+\mathcal{L}_{cycleGAN}(X_S, Y_S, X_T, Y_T, F_T, G_{S\rightarrow T}, G_{T\rightarrow S}, D_S, D_T) =  \mathcal{L}_{GAN}(G_{S\rightarrow T}, X_S, D_S, D_T)  + \mathcal{L}_{GAN}(G_{T\rightarrow S}, X_T, D_S, D_T) \\ + \mathcal{L}_{Cyc}(G_{S\rightarrow T},G_{T\rightarrow S}, X_S, X_T) + \mathcal{L}_{G_{sem}}(G_{S\rightarrow T}, X_S, F_T, Y_S) \\ +  \mathcal{L}_{G_{sem}}(G_{S\rightarrow T}, G_{T\rightarrow S}, X_T, F_T, Y_T) 
 \end{align*}
 \\Which corresponds to solving the optimization problem\\
 \begin{align*}
-\argmin_{F_T} \min_{G_{S\rightarrow T}, G_{T\rightarrow S}} \max_{D_S, D_T}  \mathcal{L}_{total}(X_S, Y_S, X_T, Y_T, F_T, G_{S\rightarrow T}, G_{T\rightarrow S}, D_S, D_T) 
+\argmin_{G_{S\rightarrow T}, G_{T\rightarrow S}} \max_{D_S, D_T}  \mathcal{L}_{cycleGAN}(X_S, Y_S, X_T, Y_T, F_T, G_{S\rightarrow T}, G_{T\rightarrow S}, D_S, D_T) 
+\end{align*}
+\\The segmentation network is updated separately with:\\
+\begin{align*}
+\argmin_{F_T} \mathcal{L}_{sem}( X_{SasT}, X_T, Y_S, Y_T, F_T) 
 \end{align*}
 
 \section{Experiments}
@@ -108,10 +112,46 @@ The baseline is a classifier with the same architecture as ours, trained without
 
 The evaluation metric used is weighted IOU. Our method achieved 75\% accuracy with 10\% of paired data from the target domain, but stops further improving as the percentage increases. Notice that the baseline reached \%75 accuracy when around 90\% of paired real data is used. But it's possible that the architecture for the classifier is too simple(U-Net) that it is not capable of learning more.\\
 
+\begin{figure}[H]
+    \centering
+\includegraphics[width=0.7\textwidth]{figures/realx_base (1).png}\\
+\caption{keeping the training dataset size fixed, varying percentage of paired data (10\% to 90\%) in CITYSCAPES + GTA5 stylized as CITYSCAPES to train the segmentation network. The orange line is the fully supervised model using only CITYSCAPES pairs (oracle).  It seems like style transfer might have negative effects.}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=0.7\textwidth]{figures/real100_and_syn (1).png}\\
+\caption{using all the paired data in CITYSCAPES + varying percentage of GTA5 (10\%, 20\%, 50\% of total) stylized as CITYSCAPES paired data to train the segmentation network. The blue line is the fully supervised model using only CITYSCAPES pairs (oracle) It seems like style transfer might have negative effects.}
+\end{figure}
+
+\section*{new approach}
+In the first stage, train a segmentation network with GTA5 pairs to use as auxiliary loss for cycleGAN training. This should be replaced by some pre-trained network, i.e. a VGG.\\
+In the second stage, train the normal cycleGAN, obtain a generator G that maps from GTA5 to CITYSCAPES and a discriminator $D_T$ that tells if an image is from the target domain .\\
+In the third stage, train a segmentation network $F_T$ using stylized GTA5 pairs.\\
+In the fourth stage, train $F_T$ end to end with G, discriminator $D_T$ and $D_F$. $D_T$ tells if an image is from the target domain, in our case CITYSCAPES. $D_F$ tells if a semantic map looks real, and we hope that adversarial training with $D_F$ will force $F_T$ to output realistic semantic maps for unsupervised domain CITYSCAPES.
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=0.7\textwidth]{figures/syn_tran_base.png}\\
+\caption{validation error of different models. newly proposed model- sky blue, source only- dark blue, stylized GTA5- red, and orange is the oracle model using all CITYSCAPES pairs.}
+\end{figure}
+
+
+\section*{TODOs}
+change baseline to deeplab v3 + resnet and retrain\\
+train with current size cityscapes with full GTA5 and evaluate the performance.\\
+train with full size cityscapes with cleaned GTA5 and evaluate the performance.\\
+train with full size cityscapes with full GTA5 and evaluate the performance.\\
+train Cycada \cite{hoffman2017cycada} and compare\\
+train Fcns in the wild \cite{hoffman2016fcns} and compare\\
+train \cite{tsai2018learning} and compare\\
+train \cite{Chen_2018_CVPR} and compare
+
 \section*{Issues}
-Some images from the GTA dataset capture scenes on the pavement instead of the road, which might lead to problems because cars don't drive on pavements in real life and the difference between pavements and roads is not significant.\\
 Adjust the weights on loss for segmenting stylized images when increasing the percentage of source data used.\\
-The sample is unbalanced(most instances are road and sky), adjust the weights for different class?
+The sample is unbalanced(most instances are road and sky), adjust the weights for different class?\\
+training segmentation network and generators end to end might not work? keep segmen network fixed, train cygan, cygan converges and fixed, train segmen?
 \bibliography{summary}
 \bibliographystyle{plain}
 

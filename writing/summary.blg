@@ -1,0 +1,51 @@
+This is BibTeX, Version 0.99d (TeX Live 2019)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: summary.aux
+The style file: plain.bst
+Database file #1: summary.bib
+Repeated entry---line 90 of file summary.bib
+ : @article{hoffman2017cycada
+ :                           ,
+I'm skipping whatever remains of this entry
+You've used 7 entries,
+            2118 wiz_defined-function locations,
+            533 strings with 5697 characters,
+and the built_in function-call counts, 3452 in all, are:
+= -- 325
+> -- 211
+< -- 4
++ -- 84
+- -- 76
+* -- 247
+:= -- 544
+add.period$ -- 22
+call.type$ -- 7
+change.case$ -- 59
+chr.to.int$ -- 0
+cite$ -- 7
+duplicate$ -- 132
+empty$ -- 236
+format.name$ -- 76
+if$ -- 735
+int.to.chr$ -- 0
+int.to.str$ -- 7
+missing$ -- 7
+newline$ -- 38
+num.names$ -- 14
+pop$ -- 75
+preamble$ -- 1
+purify$ -- 52
+quote$ -- 0
+skip$ -- 108
+stack$ -- 0
+substring$ -- 188
+swap$ -- 54
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 28
+warning$ -- 0
+while$ -- 26
+width$ -- 8
+write$ -- 77
+(There was 1 error message)

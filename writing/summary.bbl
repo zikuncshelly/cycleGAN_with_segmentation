@@ -1,0 +1,49 @@
+\begin{thebibliography}{1}
+
+\bibitem{Chen_2018_CVPR}
+Yuhua Chen, Wen Li, and Luc Van~Gool.
+\newblock Road: Reality oriented adaptation for semantic segmentation of urban
+  scenes.
+\newblock In {\em The IEEE Conference on Computer Vision and Pattern
+  Recognition (CVPR)}, June 2018.
+
+\bibitem{cordts2016cityscapes}
+Marius Cordts, Mohamed Omran, Sebastian Ramos, Timo Rehfeld, Markus Enzweiler,
+  Rodrigo Benenson, Uwe Franke, Stefan Roth, and Bernt Schiele.
+\newblock The cityscapes dataset for semantic urban scene understanding.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 3213--3223, 2016.
+
+\bibitem{hoffman2017cycada}
+Judy Hoffman, Eric Tzeng, Taesung Park, Jun-Yan Zhu, Phillip Isola, Kate
+  Saenko, Alexei~A Efros, and Trevor Darrell.
+\newblock Cycada: Cycle-consistent adversarial domain adaptation.
+\newblock {\em arXiv preprint arXiv:1711.03213}, 2017.
+
+\bibitem{hoffman2016fcns}
+Judy Hoffman, Dequan Wang, Fisher Yu, and Trevor Darrell.
+\newblock Fcns in the wild: Pixel-level adversarial and constraint-based
+  adaptation.
+\newblock {\em arXiv preprint arXiv:1612.02649}, 2016.
+
+\bibitem{richter2016playing}
+Stephan~R Richter, Vibhav Vineet, Stefan Roth, and Vladlen Koltun.
+\newblock Playing for data: Ground truth from computer games.
+\newblock In {\em European conference on computer vision}, pages 102--118.
+  Springer, 2016.
+
+\bibitem{tsai2018learning}
+Yi-Hsuan Tsai, Wei-Chih Hung, Samuel Schulter, Kihyuk Sohn, Ming-Hsuan Yang,
+  and Manmohan Chandraker.
+\newblock Learning to adapt structured output space for semantic segmentation.
+\newblock In {\em Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition}, pages 7472--7481, 2018.
+
+\bibitem{zhu2017unpaired}
+Jun-Yan Zhu, Taesung Park, Phillip Isola, and Alexei~A Efros.
+\newblock Unpaired image-to-image translation using cycle-consistent
+  adversarial networks.
+\newblock In {\em Proceedings of the IEEE international conference on computer
+  vision}, pages 2223--2232, 2017.
+
+\end{thebibliography}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.5.8)  13 NOV 2019 00:08
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.5.8)  27 NOV 2019 11:21
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -594,11 +594,6 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 24.
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 30.
-
-
-LaTeX Warning: Citation `cordts2016cityscapes' on page 1 undefined on input lin
-e 30.
-
 <figures/ulm_000088_000019_leftImg8bit.jpg, id=1, 513.92pt x 256.96pt>
 File: figures/ulm_000088_000019_leftImg8bit.jpg Graphic file (type jpg)
 <use figures/ulm_000088_000019_leftImg8bit.jpg>
@@ -615,10 +610,6 @@ put line 34.
 Underfull \hbox (badness 10000) in paragraph at lines 30--37
 
  []
-
-
-LaTeX Warning: Citation `richter2016playing' on page 1 undefined on input line 
-38.
 
 <figures/068_02196.jpg, id=4, 513.92pt x 256.96pt>
 File: figures/068_02196.jpg Graphic file (type jpg)
@@ -700,56 +691,81 @@ Underfull \hbox (badness 10000) in paragraph at lines 91--93
 
  []
 
+
+Underfull \hbox (badness 10000) in paragraph at lines 95--97
+
+ []
+
 <figures/real_p.png, id=118, 773.89125pt x 471.7625pt>
 File: figures/real_p.png Graphic file (type png)
 <use figures/real_p.png>
-Package pdftex.def Info: figures/real_p.png  used on input line 106.
+Package pdftex.def Info: figures/real_p.png  used on input line 110.
 (pdftex.def)             Requested size: 350.33727pt x 213.56529pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 99--107
+Underfull \hbox (badness 10000) in paragraph at lines 103--111
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 109--110
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
 
  []
 
-No file summary.bbl.
-[4 <./figures/real_p.png>] [5] (./summary.aux)
+[4 <./figures/real_p.png>]
 
-LaTeX Warning: There were undefined references.
+LaTeX Warning: File `figures/realx_base (1).png' not found on input line 117.
 
+<figures/realx_base (1).png, id=124, 331.2375pt x 200.6697pt>
+File: figures/realx_base (1).png Graphic file (type png)
+<use figures/realx_base (1).png>
+Package pdftex.def Info: figures/realx_base (1).png  used on input line 117.
+(pdftex.def)             Requested size: 350.33727pt x 212.24954pt.
 
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+LaTeX Warning: File `figures/real100_and_syn (1).png' not found on input line 1
+24.
 
- ) 
+<figures/real100_and_syn (1).png, id=125, 331.2375pt x 200.6697pt>
+File: figures/real100_and_syn (1).png Graphic file (type png)
+<use figures/real100_and_syn (1).png>
+Package pdftex.def Info: figures/real100_and_syn (1).png  used on input line 12
+4.
+(pdftex.def)             Requested size: 350.33727pt x 212.24954pt.
+[5 <./figures/realx_base (1).png> <./figures/real100_and_syn (1).png>]
+<figures/syn_tran_base.png, id=131, 1029.8475pt x 715.67375pt>
+File: figures/syn_tran_base.png Graphic file (type png)
+<use figures/syn_tran_base.png>
+Package pdftex.def Info: figures/syn_tran_base.png  used on input line 136.
+(pdftex.def)             Requested size: 350.33727pt x 243.4569pt.
+
+(./summary.bbl [6 <./figures/syn_tran_base.png>]) [7] (./summary.aux) ) 
 Here is how much of TeX's memory you used:
- 15872 strings out of 492616
- 284894 string characters out of 6129482
+ 15903 strings out of 492616
+ 285557 string characters out of 6129482
  433220 words of memory out of 5000000
- 19605 multiletter control sequences out of 15000+600000
- 545161 words of font info for 57 fonts, out of 8000000 for 9000
+ 19629 multiletter control sequences out of 15000+600000
+ 546845 words of font info for 59 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 42i,9n,63p,485b,317s stack positions out of 5000i,500n,10000p,200000b,80000s
- </Users/konatayumikata/Library/texlive/2019/texmf-var/fonts/pk/ljfour/public
-/bbm/bbm10.600pk>{/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/base/8r.en
-c}</usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
-></usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb>
-</usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></
-usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></us
-r/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/
-local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/loc
-al/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/loca
-l/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/local/
-texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/te
-xlive/2019/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/loca
-l/texlive/2019/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/
-2019/texmf-dist/fonts/type1/urw/times/utmr8a.pfb>
-Output written on summary.pdf (5 pages, 1251339 bytes).
+ 42i,9n,63p,457b,317s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/lo
+cal/texlive/2019/texmf-dist/fonts/enc/dvips/base/8r.enc} </Users/konatayumikata
+/Library/texlive/2019/texmf-var/fonts/pk/ljfour/public/bbm/bbm10.600pk></usr/lo
+cal/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/loc
+al/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/loca
+l/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/
+texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/te
+xlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texl
+ive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive
+/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/
+2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/local/texlive/20
+19/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2019
+/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/
+2019/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2019/texmf
+-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2019/texmf-dist/font
+s/type1/urw/times/utmri8a.pfb>
+Output written on summary.pdf (7 pages, 1787120 bytes).
 PDF statistics:
- 171 PDF objects out of 1000 (max. 8388607)
- 109 compressed objects within 2 object streams
+ 189 PDF objects out of 1000 (max. 8388607)
+ 118 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
- 41 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 56 words of extra memory for PDF output out of 10000 (max. 10000000)
 

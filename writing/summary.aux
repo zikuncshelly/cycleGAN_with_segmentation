@@ -1,21 +1,36 @@
 \relax 
 \citation{cordts2016cityscapes}
 \citation{richter2016playing}
+\citation{zhu2017unpaired}
 \babel@aux{british}{}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Objective}{1}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {2}Datasets}{1}\protected@file@percent }
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Sample pair of images from the CITYSCAPES data set.\relax }}{1}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
 \newlabel{fig:cityscapes}{{1}{1}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Sample pair of images from the GTA5 data set.\relax }}{1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Sample pair of images from the GTA5 data set. As can be noticed, the car is driving on a sidewalk, and scenes like this are very common in the GTA5 dataset. Worried that this might lead to a significant domain gap unresolvable by aligning styles, I went through the dataset and excluded them from our training set.\relax }}{1}\protected@file@percent }
 \newlabel{fig:GTA5}{{2}{1}}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Models}{2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Basic CycleGAN}{2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Basic CycleGAN\cite  {zhu2017unpaired}}{2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Backprop from classifier to generators}{2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Training Classifier}{3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4}Notations}{3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {5}Loss Functions}{3}\protected@file@percent }
-\bibdata{summary}
-\bibstyle{plain}
 \@writefile{toc}{\contentsline {section}{\numberline {6}Experiments}{4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Changing percentages of real(target) data used in our model}{4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces keeping the training dataset size fixed, varying percentage of paired data (10\% to 90\%) in CITYSCAPES + GTA5 stylized as CITYSCAPES to train the segmentation network. The orange line is the fully supervised model using only CITYSCAPES pairs (oracle). It seems like style transfer might have negative effects.\relax }}{5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces using all the paired data in CITYSCAPES + varying percentage of GTA5 (10\%, 20\%, 50\% of total) stylized as CITYSCAPES paired data to train the segmentation network. The blue line is the fully supervised model using only CITYSCAPES pairs (oracle) It seems like style transfer might have negative effects.\relax }}{5}\protected@file@percent }
+\citation{hoffman2017cycada}
+\citation{hoffman2016fcns}
+\citation{tsai2018learning}
+\citation{Chen_2018_CVPR}
+\bibdata{summary}
+\bibcite{Chen_2018_CVPR}{1}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces validation error of different models. newly proposed model- sky blue, source only- dark blue, stylized GTA5- red, and orange is the oracle model using all CITYSCAPES pairs.\relax }}{6}\protected@file@percent }
+\bibcite{cordts2016cityscapes}{2}
+\bibcite{hoffman2017cycada}{3}
+\bibcite{hoffman2016fcns}{4}
+\bibcite{richter2016playing}{5}
+\bibcite{tsai2018learning}{6}
+\bibcite{zhu2017unpaired}{7}
+\bibstyle{plain}
