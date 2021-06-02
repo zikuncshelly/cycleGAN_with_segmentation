@@ -20,6 +20,6 @@ torchfile==0.1.0
 torchvision==0.4.1
 tornado==6.0.3
 tqdm==4.37.0
-urllib3==1.25.6
+urllib3==1.26.5
 visdom==0.1.8.9
 websocket-client==0.56.0
